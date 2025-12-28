@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>하루 1판 테트리스</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="싱글 / 2인 / AI 대전 가능한 하루 1판 테트리스"
+    />
+    <meta name="keywords" content="테트리스, AI게임, 2인게임, 웹게임" />
+
+    <meta property="og:title" content="하루 1판 테트리스" />
+    <meta
+      property="og:image"
+      content="https://dummyimage.com/1200x630/000/fff&text=DAILY+TETRIS"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body
+    class="bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white min-h-screen flex flex-col items-center py-8"
+  >
+    <h1
+      class="mt-4 text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent drop-shadow-lg"
+    >
+      🧱 하루 1판 테트리스
+    </h1>
+
+    <!-- 모드 선택 -->
+    <div id="menu" class="mt-8 flex flex-col gap-4 items-center">
+      <div class="flex gap-4">
+        <button
+          onclick="start('solo')"
+          class="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-lg text-white font-bold text-lg shadow-lg transform transition-all hover:scale-105"
+        >
+          🤖 싱글 (AI)
+        </button>
+        <button
+          onclick="start('duo')"
+          class="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-lg text-white font-bold text-lg shadow-lg transform transition-all hover:scale-105"
+        >
+          👥 2인 플레이
+        </button>
+      </div>
+
+      <select
+        id="theme"
+        class="text-black mt-4 p-3 rounded-lg text-lg font-semibold shadow-lg bg-white"
+      >
+        <option value="classic">🎨 Classic</option>
+        <option value="neon">💡 Neon</option>
+        <option value="pastel">🌸 Pastel</option>
+        <option value="mono">⚫ Mono</option>
+      </select>
+    </div>
+
+    <!-- 통계 -->
+    <div id="stats" class="mt-6 text-lg text-zinc-300 font-semibold"></div>
+
+    <!-- 게임 -->
+    <div
+      id="game"
+      class="hidden mt-8 flex flex-col md:flex-row gap-8 items-start"
+    >
+      <!-- P1 패널 -->
+      <div class="flex flex-col items-center">
+        <div
+          class="bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-xl p-6 shadow-2xl border-2 border-zinc-700"
+        >
+          <div class="text-center mb-4">
+            <h2 class="text-2xl font-bold text-blue-400 mb-2">플레이어 1</h2>
+            <div id="p1-score" class="text-xl font-semibold text-yellow-400">
+              점수: 0
+            </div>
+          </div>
+          <canvas
+            id="p1"
+            width="400"
+            height="720"
+            class="bg-black rounded-lg border-4 border-zinc-600 shadow-inner w-full max-w-[400px] h-auto"
+            style="image-rendering: pixelated"
+          ></canvas>
+        </div>
+        <div class="mt-4 text-sm text-zinc-400 text-center">
+          <div>← → 이동 | ↑ 회전 | ↓ 빠른 낙하</div>
+          <div>스페이스바: 한 번에 떨어뜨리기</div>
+        </div>
+      </div>
+
+      <!-- P2 패널 -->
+      <div id="p2-panel" class="flex flex-col items-center hidden">
+        <div
+          class="bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-xl p-6 shadow-2xl border-2 border-zinc-700"
+        >
+          <div class="text-center mb-4">
+            <h2 class="text-2xl font-bold text-green-400 mb-2">플레이어 2</h2>
+            <div id="p2-score" class="text-xl font-semibold text-yellow-400">
+              점수: 0
+            </div>
+          </div>
+          <canvas
+            id="p2"
+            width="400"
+            height="720"
+            class="bg-black rounded-lg border-4 border-zinc-600 shadow-inner w-full max-w-[400px] h-auto"
+            style="image-rendering: pixelated"
+          ></canvas>
+        </div>
+        <div class="mt-4 text-sm text-zinc-400 text-center">
+          <div>WASD 이동 | W 회전 | Enter 빠른 낙하</div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="result"
+      class="mt-6 text-3xl font-bold text-center min-h-[50px]"
+    ></div>
+
+    <!-- 공유하기 버튼 -->
+    <div
+      id="share-buttons"
+      class="hidden mt-6 flex gap-4 flex-wrap justify-center"
+    ></div>
+
+    <!-- 모바일 컨트롤 -->
+    <div id="mobile-controls" class="hidden mt-6 w-full max-w-md px-4 mx-auto">
+      <div class="grid grid-cols-3 gap-4 mb-4">
+        <button
+          id="btn-left"
+          class="p-4 bg-zinc-700 rounded-lg text-2xl font-bold active:bg-zinc-600 touch-manipulation"
+        >
+          ←
+        </button>
+        <button
+          id="btn-rotate"
+          class="p-4 bg-zinc-700 rounded-lg text-2xl font-bold active:bg-zinc-600 touch-manipulation"
+        >
+          ↻
+        </button>
+        <button
+          id="btn-right"
+          class="p-4 bg-zinc-700 rounded-lg text-2xl font-bold active:bg-zinc-600 touch-manipulation"
+        >
+          →
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <button
+          id="btn-down"
+          class="p-4 bg-zinc-700 rounded-lg text-xl font-bold active:bg-zinc-600 touch-manipulation"
+        >
+          ↓ 빠른 낙하
+        </button>
+        <button
+          id="btn-hard-drop"
+          class="p-4 bg-zinc-700 rounded-lg text-xl font-bold active:bg-zinc-600 touch-manipulation"
+        >
+          ⬇ 한 번에
+        </button>
+      </div>
+    </div>
+
+    <!-- 다른 서비스 보기 -->
+    <div class="mt-8 mb-4">
+      <a
+        href="https://funnyfunny.cloud/"
+        target="_blank"
+        class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-semibold transition-colors"
+      >
+        🎁 다른 서비스 보기
+      </a>
+    </div>
+
+    <script>
+      /* ===================== 설정 ===================== */
+      const COLS = 10,
+        ROWS = 18;
+      const PIECES = "TJLOSZI";
+      const THEMES = {
+        classic: [
+          "#facc15",
+          "#22d3ee",
+          "#fb923c",
+          "#60a5fa",
+          "#4ade80",
+          "#f87171",
+          "#c084fc",
+        ],
+        neon: ["#0ff", "#f0f", "#ff0", "#0f0", "#f00", "#00f", "#fff"],
+        pastel: [
+          "#fde68a",
+          "#bae6fd",
+          "#fecaca",
+          "#bbf7d0",
+          "#e9d5ff",
+          "#ddd6fe",
+          "#fed7aa",
+        ],
+        mono: ["#999", "#aaa", "#bbb", "#ccc", "#ddd", "#eee", "#fff"],
+      };
+      let COLORS = THEMES.classic;
+
+      /* ===================== 통계 ===================== */
+      let stats = JSON.parse(
+        localStorage.stats || '{"play":0,"win":0,"lose":0}'
+      );
+      function saveStats() {
+        localStorage.stats = JSON.stringify(stats);
+      }
+      function showStats() {
+        stats.play++;
+        saveStats();
+        document.getElementById(
+          "stats"
+        ).textContent = `플레이 ${stats.play} | 승 ${stats.win} | 패 ${stats.lose}`;
+      }
+
+      /* ===================== 사운드 ===================== */
+      let ctx = null;
+      let bgmSource = null;
+      let bgmGain = null;
+
+      function initAudio() {
+        if (!ctx) {
+          ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (ctx.state === "suspended") {
+          ctx.resume();
+        }
+      }
+
+      function beep(freq = 400, dur = 0.1) {
+        try {
+          initAudio();
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.frequency.value = freq;
+          o.connect(g);
+          g.connect(ctx.destination);
+          o.start();
+          g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+          o.stop(ctx.currentTime + dur);
+        } catch (e) {
+          // 사운드 실패 시 무시
+        }
+      }
+
+      function startBGM() {
+        try {
+          initAudio();
+          if (bgmSource) {
+            stopBGM();
+          }
+
+          // 테트리스 BGM (Korobeiniki) - 정확한 멜로디
+          const melody = [
+            // 첫 번째 구절
+            { freq: 523.25, dur: 0.12 }, // E5
+            { freq: 493.88, dur: 0.12 }, // B4
+            { freq: 440, dur: 0.12 }, // A4
+            { freq: 392, dur: 0.12 }, // G4
+            { freq: 349.23, dur: 0.24 }, // F4
+            { freq: 392, dur: 0.12 }, // G4
+            { freq: 440, dur: 0.24 }, // A4
+            { freq: 392, dur: 0.12 }, // G4
+            { freq: 349.23, dur: 0.12 }, // F4
+            { freq: 329.63, dur: 0.12 }, // E4
+            { freq: 293.66, dur: 0.24 }, // D4
+            // 두 번째 구절
+            { freq: 293.66, dur: 0.12 }, // D4
+            { freq: 349.23, dur: 0.12 }, // F4
+            { freq: 392, dur: 0.24 }, // G4
+            { freq: 349.23, dur: 0.12 }, // F4
+            { freq: 329.63, dur: 0.12 }, // E4
+            { freq: 293.66, dur: 0.24 }, // D4
+            // 세 번째 구절
+            { freq: 440, dur: 0.12 }, // A4
+            { freq: 493.88, dur: 0.12 }, // B4
+            { freq: 523.25, dur: 0.12 }, // E5
+            { freq: 493.88, dur: 0.12 }, // B4
+            { freq: 440, dur: 0.12 }, // A4
+            { freq: 392, dur: 0.12 }, // G4
+            { freq: 349.23, dur: 0.24 }, // F4
+            { freq: 392, dur: 0.12 }, // G4
+            { freq: 440, dur: 0.24 }, // A4
+            // 네 번째 구절
+            { freq: 392, dur: 0.12 }, // G4
+            { freq: 349.23, dur: 0.12 }, // F4
+            { freq: 329.63, dur: 0.12 }, // E4
+            { freq: 293.66, dur: 0.24 }, // D4
+            { freq: 293.66, dur: 0.12 }, // D4
+            { freq: 349.23, dur: 0.12 }, // F4
+            { freq: 392, dur: 0.24 }, // G4
+            { freq: 349.23, dur: 0.12 }, // F4
+            { freq: 329.63, dur: 0.12 }, // E4
+            { freq: 293.66, dur: 0.36 }, // D4
+          ];
+
+          bgmGain = ctx.createGain();
+          bgmGain.gain.value = 0.2;
+          bgmGain.connect(ctx.destination);
+
+          let loopTimeout = null;
+          let isPlaying = true;
+
+          function playNote(note, time) {
+            try {
+              const o = ctx.createOscillator();
+              const g = ctx.createGain();
+              o.type = "square";
+              o.frequency.value = note.freq;
+              o.connect(g);
+              g.connect(bgmGain);
+              g.gain.setValueAtTime(0.15, time);
+              g.gain.exponentialRampToValueAtTime(0.01, time + note.dur);
+              o.start(time);
+              o.stop(time + note.dur);
+            } catch (e) {
+              // 노트 재생 실패 시 무시
+            }
+          }
+
+          function playLoop() {
+            if (!gameRunning || !isPlaying) {
+              bgmSource = null;
+              if (loopTimeout) clearTimeout(loopTimeout);
+              return;
+            }
+
+            const startTime = ctx.currentTime;
+            let noteTime = startTime;
+
+            melody.forEach((note) => {
+              playNote(note, noteTime);
+              noteTime += note.dur;
+            });
+
+            const totalDur = noteTime - startTime;
+            loopTimeout = setTimeout(() => {
+              if (gameRunning && isPlaying) {
+                playLoop();
+              }
+            }, totalDur * 1000);
+          }
+
+          bgmSource = {
+            stop: () => {
+              isPlaying = false;
+              if (loopTimeout) {
+                clearTimeout(loopTimeout);
+                loopTimeout = null;
+              }
+            },
+          };
+
+          // 약간의 지연 후 시작 (AudioContext가 준비될 시간)
+          setTimeout(() => {
+            if (gameRunning) {
+              playLoop();
+            }
+          }, 100);
+        } catch (e) {
+          console.error("BGM 오류:", e);
+        }
+      }
+
+      function stopBGM() {
+        if (bgmSource) {
+          bgmSource.stop();
+          bgmSource = null;
+        }
+        if (bgmGain) {
+          bgmGain.gain.cancelScheduledValues(ctx.currentTime);
+          bgmGain.gain.setValueAtTime(0, ctx.currentTime);
+          bgmGain = null;
+        }
+      }
+
+      /* ===================== 엔진 ===================== */
+      function arena() {
+        return Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+      }
+      function piece(t) {
+        return {
+          T: [
+            [0, 1, 0],
+            [1, 1, 1],
+          ],
+          O: [
+            [2, 2],
+            [2, 2],
+          ],
+          L: [
+            [0, 0, 3],
+            [3, 3, 3],
+          ],
+          J: [
+            [4, 0, 0],
+            [4, 4, 4],
+          ],
+          I: [[5, 5, 5, 5]],
+          S: [
+            [0, 6, 6],
+            [6, 6, 0],
+          ],
+          Z: [
+            [7, 7, 0],
+            [0, 7, 7],
+          ],
+        }[t];
+      }
+      function rand() {
+        return PIECES[(Math.random() * 7) | 0];
+      }
+
+      function Player(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext("2d");
+        this.ctx.scale(40, 40); // 캔버스 크기에 맞게 스케일 조정 (400/10 = 40)
+        this.field = arena();
+        this.matrix = piece(rand());
+        this.pos = { x: 3, y: 0 };
+        this.score = 0;
+        this.lines = 0;
+      }
+
+      function collide(p, offset = { x: 0, y: 0 }) {
+        const pos = { x: p.pos.x + offset.x, y: p.pos.y + offset.y };
+        return p.matrix.some((r, y) =>
+          r.some((v, x) => {
+            if (!v) return false;
+            const nx = x + pos.x;
+            const ny = y + pos.y;
+            return (
+              nx < 0 ||
+              nx >= COLS ||
+              ny >= ROWS ||
+              (ny >= 0 && p.field[ny]?.[nx] !== 0)
+            );
+          })
+        );
+      }
+
+      function rotate(m) {
+        const rows = m.length;
+        const cols = m[0].length;
+        const rotated = Array.from({ length: cols }, () => Array(rows).fill(0));
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            rotated[x][rows - 1 - y] = m[y][x];
+          }
+        }
+        return rotated;
+      }
+
+      function tryRotate(p) {
+        const rotated = rotate(p.matrix);
+        const oldMatrix = p.matrix;
+        const oldPos = { ...p.pos };
+
+        // 회전 시도
+        p.matrix = rotated;
+
+        // 충돌 체크
+        if (!collide(p)) {
+          return true;
+        }
+
+        // Wall kick 시도: 왼쪽으로 1칸
+        p.pos.x--;
+        if (!collide(p)) {
+          return true;
+        }
+
+        // 오른쪽으로 1칸
+        p.pos.x += 2;
+        if (!collide(p)) {
+          return true;
+        }
+
+        // 왼쪽으로 2칸
+        p.pos.x -= 3;
+        if (!collide(p)) {
+          return true;
+        }
+
+        // 오른쪽으로 2칸
+        p.pos.x += 4;
+        if (!collide(p)) {
+          return true;
+        }
+
+        // 실패 시 원래대로
+        p.matrix = oldMatrix;
+        p.pos = oldPos;
+        return false;
+      }
+
+      function merge(p) {
+        p.matrix.forEach((r, y) =>
+          r.forEach((v, x) => {
+            if (v && y + p.pos.y >= 0) {
+              p.field[y + p.pos.y][x + p.pos.x] = v;
+            }
+          })
+        );
+      }
+
+      function sweep(p) {
+        let c = 0;
+        for (let y = ROWS - 1; y >= 0; y--) {
+          if (p.field[y].every((v) => v)) {
+            p.field.splice(y, 1);
+            p.field.unshift(Array(COLS).fill(0));
+            c++;
+            y++;
+          }
+        }
+        if (c) {
+          p.lines += c;
+          // 라인 수에 따른 점수 계산
+          const points = [0, 100, 300, 500, 800];
+          p.score += points[c] || c * 100;
+          beep(600);
+          navigator.vibrate?.(50);
+        }
+      }
+
+      function draw(p) {
+        const ctx = p.ctx;
+        ctx.clearRect(0, 0, COLS, ROWS);
+
+        // 배경
+        ctx.fillStyle = "#0a0a0a";
+        ctx.fillRect(0, 0, COLS, ROWS);
+
+        // 그리드 라인
+        ctx.strokeStyle = "#1a1a1a";
+        ctx.lineWidth = 0.02;
+        for (let x = 0; x <= COLS; x++) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, ROWS);
+          ctx.stroke();
+        }
+        for (let y = 0; y <= ROWS; y++) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(COLS, y);
+          ctx.stroke();
+        }
+
+        // 고정된 블록
+        p.field.forEach((r, y) =>
+          r.forEach((v, x) => {
+            if (v) {
+              ctx.fillStyle = COLORS[v - 1];
+              ctx.fillRect(x + 0.05, y + 0.05, 0.9, 0.9);
+              // 하이라이트
+              ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+              ctx.fillRect(x + 0.05, y + 0.05, 0.9, 0.2);
+            }
+          })
+        );
+
+        // 현재 블록
+        p.matrix.forEach((r, y) =>
+          r.forEach((v, x) => {
+            if (v) {
+              const drawY = y + p.pos.y;
+              if (drawY >= 0) {
+                ctx.fillStyle = COLORS[v - 1];
+                ctx.fillRect(x + p.pos.x + 0.05, drawY + 0.05, 0.9, 0.9);
+                // 하이라이트
+                ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+                ctx.fillRect(x + p.pos.x + 0.05, drawY + 0.05, 0.9, 0.2);
+              }
+            }
+          })
+        );
+
+        // 점수 업데이트
+        const scoreEl =
+          p === p1
+            ? document.getElementById("p1-score")
+            : document.getElementById("p2-score");
+        if (scoreEl) {
+          scoreEl.textContent = `점수: ${p.score} | 라인: ${p.lines}`;
+        }
+      }
+
+      /* ===================== AI ===================== */
+      function aiMove(ai) {
+        if (!ai) return;
+        const dir = Math.random() < 0.5 ? -1 : 1;
+        ai.pos.x += dir;
+        if (collide(ai)) {
+          ai.pos.x -= dir;
+        }
+        if (Math.random() < 0.1) {
+          tryRotate(ai);
+        }
+      }
+
+      /* ===================== 시작 ===================== */
+      let p1,
+        p2,
+        mode,
+        gameRunning = false;
+      const keys = {};
+      const keyTimers = {};
+
+      function handleKey(player, actions) {
+        if (!player) return;
+
+        if (actions.left) {
+          player.pos.x--;
+          if (collide(player)) player.pos.x++;
+          else beep(200, 0.05);
+        }
+        if (actions.right) {
+          player.pos.x++;
+          if (collide(player)) player.pos.x--;
+          else beep(200, 0.05);
+        }
+        if (actions.down) {
+          drop(player);
+        }
+        if (actions.rotate) {
+          if (tryRotate(player)) {
+            beep(300, 0.05);
+          }
+        }
+        if (actions.hardDrop) {
+          while (!collide(player, { x: 0, y: 1 })) {
+            player.pos.y++;
+          }
+          drop(player);
+        }
+      }
+
+      function startKeyRepeat(keyCode, player, actions) {
+        if (keyTimers[keyCode]) return;
+
+        // 즉시 실행
+        handleKey(player, actions);
+
+        // 첫 반복은 약간 늦게
+        keyTimers[keyCode] = setTimeout(() => {
+          const interval = setInterval(() => {
+            if (!keys[keyCode] || !gameRunning) {
+              clearInterval(interval);
+              keyTimers[keyCode] = null;
+              return;
+            }
+            handleKey(player, actions);
+          }, 50); // 빠른 반복 (50ms)
+
+          keyTimers[keyCode] = interval;
+        }, 200); // 첫 반복까지 200ms 대기
+      }
+
+      function stopKeyRepeat(keyCode) {
+        if (keyTimers[keyCode]) {
+          if (typeof keyTimers[keyCode] === "number") {
+            clearTimeout(keyTimers[keyCode]);
+          } else {
+            clearInterval(keyTimers[keyCode]);
+          }
+          keyTimers[keyCode] = null;
+        }
+      }
+
+      // 스크롤 방지를 위한 전역 이벤트 리스너
+      document.addEventListener(
+        "keydown",
+        (e) => {
+          // 게임 중일 때만 방향키와 스페이스바 스크롤 방지
+          if (gameRunning) {
+            if (
+              ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " "].includes(
+                e.key
+              )
+            ) {
+              e.preventDefault();
+            }
+          }
+        },
+        { passive: false }
+      );
+
+      document.addEventListener("keydown", (e) => {
+        if (!gameRunning) return;
+        const key = e.key.toLowerCase();
+        const keyCode = e.key;
+
+        // 이미 눌린 키는 무시 (키 반복 방지)
+        if (keys[keyCode] || (key !== keyCode && keys[key])) return;
+
+        // P1 컨트롤 (방향키)
+        if (keyCode === "ArrowLeft" && p1) {
+          e.preventDefault();
+          e.stopPropagation();
+          keys["ArrowLeft"] = true;
+          startKeyRepeat("ArrowLeft", p1, { left: true });
+        }
+        if (keyCode === "ArrowRight" && p1) {
+          e.preventDefault();
+          e.stopPropagation();
+          keys["ArrowRight"] = true;
+          startKeyRepeat("ArrowRight", p1, { right: true });
+        }
+        if (keyCode === "ArrowDown" && p1) {
+          e.preventDefault();
+          e.stopPropagation();
+          keys["ArrowDown"] = true;
+          startKeyRepeat("ArrowDown", p1, { down: true });
+        }
+        if (keyCode === "ArrowUp" && p1) {
+          e.preventDefault();
+          e.stopPropagation();
+          keys["ArrowUp"] = true;
+          handleKey(p1, { rotate: true });
+        }
+        if (keyCode === " " && p1) {
+          e.preventDefault();
+          e.stopPropagation();
+          keys[" "] = true;
+          handleKey(p1, { hardDrop: true });
+        }
+
+        // P2 컨트롤 (WASD, 대소문자 구분 없음)
+        if (mode === "duo" && p2) {
+          // e.code를 사용하여 한영키 상태와 관계없이 키 감지
+          const code = e.code;
+
+          // e.code를 우선 사용하여 한영키 상태와 관계없이 키 감지
+          if (code === "KeyA" || key === "a") {
+            e.preventDefault();
+            e.stopPropagation();
+            const keyId = "p2-a";
+            if (!keys[keyId]) {
+              keys[keyId] = true;
+              startKeyRepeat(keyId, p2, { left: true });
+            }
+          } else if (code === "KeyD" || key === "d") {
+            e.preventDefault();
+            e.stopPropagation();
+            const keyId = "p2-d";
+            if (!keys[keyId]) {
+              keys[keyId] = true;
+              startKeyRepeat(keyId, p2, { right: true });
+            }
+          } else if (code === "KeyS" || key === "s") {
+            e.preventDefault();
+            e.stopPropagation();
+            const keyId = "p2-s";
+            if (!keys[keyId]) {
+              keys[keyId] = true;
+              startKeyRepeat(keyId, p2, { down: true });
+            }
+          } else if (code === "KeyW" || key === "w") {
+            e.preventDefault();
+            e.stopPropagation();
+            const keyId = "p2-w";
+            if (!keys[keyId]) {
+              keys[keyId] = true;
+              handleKey(p2, { rotate: true });
+            }
+          }
+          if (code === "Enter" || keyCode === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            const keyId = "p2-enter";
+            if (!keys[keyId]) {
+              keys[keyId] = true;
+              handleKey(p2, { hardDrop: true });
+            }
+          }
+        }
+      });
+
+      // 모바일 터치 컨트롤
+      function initMobileControls() {
+        const isMobile =
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+          );
+        const mobileControls = document.getElementById("mobile-controls");
+
+        if (!mobileControls) return;
+
+        // 게임 중일 때만 표시
+        if (isMobile && gameRunning) {
+          mobileControls.classList.remove("hidden");
+        } else {
+          mobileControls.classList.add("hidden");
+        }
+
+        // 터치 버튼 이벤트
+        document.getElementById("btn-left")?.addEventListener(
+          "touchstart",
+          (e) => {
+            e.preventDefault();
+            if (p1 && gameRunning) {
+              handleKey(p1, { left: true });
+            }
+          },
+          { passive: false }
+        );
+
+        document.getElementById("btn-right")?.addEventListener(
+          "touchstart",
+          (e) => {
+            e.preventDefault();
+            if (p1 && gameRunning) {
+              handleKey(p1, { right: true });
+            }
+          },
+          { passive: false }
+        );
+
+        document.getElementById("btn-rotate")?.addEventListener(
+          "touchstart",
+          (e) => {
+            e.preventDefault();
+            if (p1 && gameRunning) {
+              handleKey(p1, { rotate: true });
+            }
+          },
+          { passive: false }
+        );
+
+        document.getElementById("btn-down")?.addEventListener(
+          "touchstart",
+          (e) => {
+            e.preventDefault();
+            if (p1 && gameRunning) {
+              handleKey(p1, { down: true });
+            }
+          },
+          { passive: false }
+        );
+
+        document.getElementById("btn-hard-drop")?.addEventListener(
+          "touchstart",
+          (e) => {
+            e.preventDefault();
+            if (p1 && gameRunning) {
+              handleKey(p1, { hardDrop: true });
+            }
+          },
+          { passive: false }
+        );
+
+        // 스와이프 제스처
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        document.addEventListener(
+          "touchstart",
+          (e) => {
+            if (!gameRunning || !p1) return;
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+          },
+          { passive: true }
+        );
+
+        document.addEventListener(
+          "touchend",
+          (e) => {
+            if (!gameRunning || !p1) return;
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
+            const threshold = 30;
+
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+              // 좌우 스와이프
+              if (Math.abs(diffX) > threshold) {
+                if (diffX > 0) {
+                  handleKey(p1, { right: true });
+                } else {
+                  handleKey(p1, { left: true });
+                }
+              }
+            } else {
+              // 상하 스와이프
+              if (Math.abs(diffY) > threshold) {
+                if (diffY > 0) {
+                  handleKey(p1, { down: true });
+                } else {
+                  handleKey(p1, { rotate: true });
+                }
+              }
+            }
+          },
+          { passive: true }
+        );
+      }
+
+      document.addEventListener("keyup", (e) => {
+        const key = e.key.toLowerCase();
+        const keyCode = e.key;
+        const code = e.code;
+
+        if (keyCode === "ArrowLeft") {
+          keys["ArrowLeft"] = false;
+          stopKeyRepeat("ArrowLeft");
+        }
+        if (keyCode === "ArrowRight") {
+          keys["ArrowRight"] = false;
+          stopKeyRepeat("ArrowRight");
+        }
+        if (keyCode === "ArrowDown") {
+          keys["ArrowDown"] = false;
+          stopKeyRepeat("ArrowDown");
+        }
+        if (keyCode === "ArrowUp") {
+          keys["ArrowUp"] = false;
+        }
+        if (keyCode === " ") {
+          keys[" "] = false;
+        }
+        if (keyCode === "Enter" || code === "Enter") {
+          keys["Enter"] = false;
+        }
+
+        // e.code를 사용하여 한영키 상태와 관계없이 키 감지
+        if (code === "KeyA" || key === "a") {
+          keys["p2-a"] = false;
+          stopKeyRepeat("p2-a");
+        } else if (code === "KeyD" || key === "d") {
+          keys["p2-d"] = false;
+          stopKeyRepeat("p2-d");
+        } else if (code === "KeyS" || key === "s") {
+          keys["p2-s"] = false;
+          stopKeyRepeat("p2-s");
+        } else if (code === "KeyW" || key === "w") {
+          keys["p2-w"] = false;
+        }
+        if (code === "Enter" || keyCode === "Enter") {
+          keys["p2-enter"] = false;
+        }
+      });
+
+      function start(m) {
+        mode = m;
+        gameRunning = true;
+        COLORS = THEMES[document.getElementById("theme").value];
+        document.getElementById("menu").classList.add("hidden");
+        document.getElementById("game").classList.remove("hidden");
+        document.getElementById("result").textContent = "";
+
+        // 캔버스 크기 설정
+        const p1Canvas = document.getElementById("p1");
+        const p2Canvas = document.getElementById("p2");
+        p1Canvas.width = 400;
+        p1Canvas.height = 720;
+        p2Canvas.width = 400;
+        p2Canvas.height = 720;
+
+        if (mode === "duo" || mode === "solo") {
+          document.getElementById("p2-panel").classList.remove("hidden");
+        } else {
+          document.getElementById("p2-panel").classList.add("hidden");
+        }
+        p1 = new Player(p1Canvas);
+        if (mode === "duo" || mode === "solo") p2 = new Player(p2Canvas);
+        else p2 = null;
+        showStats();
+        last = 0;
+
+        // AudioContext 초기화를 위해 사용자 상호작용 후 BGM 시작
+        initAudio();
+        setTimeout(() => {
+          startBGM();
+        }, 100);
+
+        // 모바일 컨트롤 초기화
+        initMobileControls();
+
+        loop();
+      }
+
+      /* ===================== 루프 ===================== */
+      function drop(p) {
+        if (!p) return;
+        p.pos.y++;
+        if (collide(p)) {
+          p.pos.y--;
+          merge(p);
+          sweep(p);
+          p.matrix = piece(rand());
+          p.pos = { x: 3, y: 0 };
+          if (collide(p)) {
+            gameRunning = false;
+            end(p === p1 ? 2 : 1);
+            return;
+          }
+        }
+      }
+
+      let last = 0;
+      function loop(t = 0) {
+        if (!gameRunning) return;
+
+        if (t - last > 700) {
+          drop(p1);
+          if (mode === "duo" && p2) drop(p2);
+          if (mode === "solo" && p2) {
+            drop(p2);
+            aiMove(p2);
+          }
+          last = t;
+        }
+
+        if (p1) draw(p1);
+        if ((mode === "duo" || mode === "solo") && p2) draw(p2);
+        requestAnimationFrame(loop);
+      }
+
+      let lastWinner = null;
+
+      function shareResult() {
+        const resultText = document.getElementById("result").textContent;
+        const scoreText =
+          mode === "duo"
+            ? `${lastWinner}P 승리!`
+            : `점수: ${p1?.score || 0} | 라인: ${p1?.lines || 0}`;
+        const shareText = `🧱 하루 1판 테트리스\n${resultText}\n${scoreText}\n\nhttps://funnyfunny.cloud/`;
+
+        if (navigator.share) {
+          navigator
+            .share({
+              title: "하루 1판 테트리스",
+              text: shareText,
+              url: window.location.href,
+            })
+            .catch(() => {
+              // 공유 취소 시 무시
+            });
+        } else {
+          // 클립보드에 복사
+          navigator.clipboard
+            .writeText(shareText)
+            .then(() => {
+              alert("결과가 클립보드에 복사되었습니다!");
+            })
+            .catch(() => {
+              // 복사 실패 시 텍스트 표시
+              prompt("결과를 복사하세요:", shareText);
+            });
+        }
+      }
+
+      function copyLink() {
+        const url = window.location.href;
+        navigator.clipboard
+          .writeText(url)
+          .then(() => {
+            alert("링크가 클립보드에 복사되었습니다!");
+          })
+          .catch(() => {
+            // 복사 실패 시 텍스트 표시
+            prompt("링크를 복사하세요:", url);
+          });
+      }
+
+      function end(winner) {
+        lastWinner = winner;
+        beep(200, 0.3);
+        navigator.vibrate?.(100);
+        const resultEl = document.getElementById("result");
+        const shareButtonsEl = document.getElementById("share-buttons");
+
+        if (mode === "duo") {
+          resultEl.textContent = `🎉 ${winner}P 승리`;
+          stats[winner === 1 ? "win" : "lose"]++;
+        } else {
+          resultEl.textContent = `게임 오버! 점수: ${p1?.score || 0} | 라인: ${
+            p1?.lines || 0
+          }`;
+          stats.lose++;
+        }
+        saveStats();
+
+        // 공유하기 버튼 표시
+        shareButtonsEl.innerHTML = `
+          <button onclick="shareResult()" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg text-white font-bold text-lg shadow-lg transform transition-all hover:scale-105">
+            📤 결과 공유하기
+          </button>
+          <button onclick="copyLink()" class="px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 rounded-lg text-white font-bold text-lg shadow-lg transform transition-all hover:scale-105">
+            🔗 링크 복사
+          </button>
+        `;
+        shareButtonsEl.classList.remove("hidden");
+
+        setTimeout(() => {
+          stopBGM();
+          // 모든 키 타이머 정리
+          Object.keys(keyTimers).forEach((key) => {
+            stopKeyRepeat(key);
+          });
+          document.getElementById("menu").classList.remove("hidden");
+          document.getElementById("game").classList.add("hidden");
+          shareButtonsEl.classList.add("hidden");
+          const mobileControls = document.getElementById("mobile-controls");
+          if (mobileControls) mobileControls.classList.add("hidden");
+          gameRunning = false;
+        }, 5000);
+      }
+
+      // 전역 함수로 노출
+      window.shareResult = shareResult;
+      window.copyLink = copyLink;
+    </script>
+  </body>
+</html>
