@@ -2,16 +2,16 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <title>하루 1판 테트리스</title>
+    <title>하루 한판 테트리스</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <meta
       name="description"
-      content="싱글 / 2인 / AI 대전 가능한 하루 1판 테트리스"
+      content="싱글 / 2인 / AI 대전 가능한 하루 한판 테트리스"
     />
     <meta name="keywords" content="테트리스, AI게임, 2인게임, 웹게임" />
 
-    <meta property="og:title" content="하루 1판 테트리스" />
+    <meta property="og:title" content="하루 한판 테트리스" />
     <meta
       property="og:image"
       content="https://dummyimage.com/1200x630/000/fff&text=DAILY+TETRIS"
@@ -26,7 +26,7 @@
     <h1
       class="mt-4 text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent drop-shadow-lg"
     >
-      🧱 하루 1판 테트리스
+      🧱 하루 한판 테트리스
     </h1>
 
     <!-- 모드 선택 -->
@@ -1289,12 +1289,12 @@
           mode === "duo"
             ? `${lastWinner}P 승리!`
             : `점수: ${p1?.score || 0} | 라인: ${p1?.lines || 0}`;
-        const shareText = `🧱 하루 1판 테트리스\n${resultText}\n${scoreText}\n\nhttps://funnyfunny.cloud/`;
+        const shareText = `🧱 하루 한판 테트리스\n${resultText}\n${scoreText}\n\nhttps://funnyfunny.cloud/`;
 
         if (navigator.share) {
           navigator
             .share({
-              title: "하루 1판 테트리스",
+              title: "하루 한판 테트리스",
               text: shareText,
               url: window.location.href,
             })
