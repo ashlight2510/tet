@@ -75,6 +75,13 @@
             <div id="p1-score" class="text-xl font-semibold text-yellow-400">
               점수: 0
             </div>
+            <button
+              id="p1-resume-btn"
+              onclick="resumePlayer(1)"
+              class="hidden mt-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg text-white font-bold text-sm shadow-lg transform transition-all hover:scale-105"
+            >
+              ▶️ 다시 시작
+            </button>
           </div>
           <canvas
             id="p1"
@@ -84,7 +91,7 @@
             style="image-rendering: pixelated"
           ></canvas>
         </div>
-        <div class="mt-4 text-sm text-zinc-400 text-center">
+        <div id="p1-controls" class="mt-4 text-sm text-zinc-400 text-center">
           <div>← → 이동 | ↑ 회전 | ↓ 빠른 낙하</div>
           <div>스페이스바: 한 번에 떨어뜨리기</div>
         </div>
@@ -100,6 +107,13 @@
             <div id="p2-score" class="text-xl font-semibold text-yellow-400">
               점수: 0
             </div>
+            <button
+              id="p2-resume-btn"
+              onclick="resumePlayer(2)"
+              class="hidden mt-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg text-white font-bold text-sm shadow-lg transform transition-all hover:scale-105"
+            >
+              ▶️ 다시 시작
+            </button>
           </div>
           <canvas
             id="p2"
@@ -109,7 +123,7 @@
             style="image-rendering: pixelated"
           ></canvas>
         </div>
-        <div class="mt-4 text-sm text-zinc-400 text-center">
+        <div id="p2-controls" class="mt-4 text-sm text-zinc-400 text-center">
           <div>WASD 이동 | W 회전 | Enter 빠른 낙하</div>
         </div>
       </div>
@@ -119,6 +133,22 @@
       id="result"
       class="mt-6 text-3xl font-bold text-center min-h-[50px]"
     ></div>
+
+    <!-- 게임 컨트롤 버튼 -->
+    <div id="game-controls" class="hidden mt-4 flex gap-4 justify-center">
+      <button
+        onclick="pauseGame()"
+        class="px-6 py-3 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 rounded-lg text-white font-bold shadow-lg transform transition-all hover:scale-105"
+      >
+        ⏸️ 일시정지
+      </button>
+      <button
+        onclick="saveGame()"
+        class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 rounded-lg text-white font-bold shadow-lg transform transition-all hover:scale-105"
+      >
+        💾 저장하기
+      </button>
+    </div>
 
     <!-- 공유하기 버튼 -->
     <div
@@ -426,6 +456,7 @@
         this.pos = { x: 3, y: 0 };
         this.score = 0;
         this.lines = 0;
+        this.gameOver = false;
       }
 
       function collide(p, offset = { x: 0, y: 0 }) {
@@ -701,85 +732,131 @@
         // 이미 눌린 키는 무시 (키 반복 방지)
         if (keys[keyCode] || (key !== keyCode && keys[key])) return;
 
-        // P1 컨트롤 (방향키)
-        if (keyCode === "ArrowLeft" && p1) {
-          e.preventDefault();
-          e.stopPropagation();
-          keys["ArrowLeft"] = true;
-          startKeyRepeat("ArrowLeft", p1, { left: true });
-        }
-        if (keyCode === "ArrowRight" && p1) {
-          e.preventDefault();
-          e.stopPropagation();
-          keys["ArrowRight"] = true;
-          startKeyRepeat("ArrowRight", p1, { right: true });
-        }
-        if (keyCode === "ArrowDown" && p1) {
-          e.preventDefault();
-          e.stopPropagation();
-          keys["ArrowDown"] = true;
-          startKeyRepeat("ArrowDown", p1, { down: true });
-        }
-        if (keyCode === "ArrowUp" && p1) {
-          e.preventDefault();
-          e.stopPropagation();
-          keys["ArrowUp"] = true;
-          handleKey(p1, { rotate: true });
-        }
-        if (keyCode === " " && p1) {
-          e.preventDefault();
-          e.stopPropagation();
-          keys[" "] = true;
-          handleKey(p1, { hardDrop: true });
-        }
+        const code = e.code;
 
-        // P2 컨트롤 (WASD, 대소문자 구분 없음)
-        if (mode === "duo" && p2) {
-          // e.code를 사용하여 한영키 상태와 관계없이 키 감지
-          const code = e.code;
+        if (mode === "duo") {
+          // 2P 모드: 1P는 WASD + 스페이스, 2P는 방향키 + 엔터
 
-          // e.code를 우선 사용하여 한영키 상태와 관계없이 키 감지
-          if (code === "KeyA" || key === "a") {
-            e.preventDefault();
-            e.stopPropagation();
-            const keyId = "p2-a";
-            if (!keys[keyId]) {
-              keys[keyId] = true;
-              startKeyRepeat(keyId, p2, { left: true });
-            }
-          } else if (code === "KeyD" || key === "d") {
-            e.preventDefault();
-            e.stopPropagation();
-            const keyId = "p2-d";
-            if (!keys[keyId]) {
-              keys[keyId] = true;
-              startKeyRepeat(keyId, p2, { right: true });
-            }
-          } else if (code === "KeyS" || key === "s") {
-            e.preventDefault();
-            e.stopPropagation();
-            const keyId = "p2-s";
-            if (!keys[keyId]) {
-              keys[keyId] = true;
-              startKeyRepeat(keyId, p2, { down: true });
-            }
-          } else if (code === "KeyW" || key === "w") {
-            e.preventDefault();
-            e.stopPropagation();
-            const keyId = "p2-w";
-            if (!keys[keyId]) {
-              keys[keyId] = true;
-              handleKey(p2, { rotate: true });
+          // P1 컨트롤 (WASD + 스페이스)
+          if (p1) {
+            if (code === "KeyA" || key === "a") {
+              e.preventDefault();
+              e.stopPropagation();
+              const keyId = "p1-a";
+              if (!keys[keyId]) {
+                keys[keyId] = true;
+                startKeyRepeat(keyId, p1, { left: true });
+              }
+            } else if (code === "KeyD" || key === "d") {
+              e.preventDefault();
+              e.stopPropagation();
+              const keyId = "p1-d";
+              if (!keys[keyId]) {
+                keys[keyId] = true;
+                startKeyRepeat(keyId, p1, { right: true });
+              }
+            } else if (code === "KeyS" || key === "s") {
+              e.preventDefault();
+              e.stopPropagation();
+              const keyId = "p1-s";
+              if (!keys[keyId]) {
+                keys[keyId] = true;
+                startKeyRepeat(keyId, p1, { down: true });
+              }
+            } else if (code === "KeyW" || key === "w") {
+              e.preventDefault();
+              e.stopPropagation();
+              const keyId = "p1-w";
+              if (!keys[keyId]) {
+                keys[keyId] = true;
+                handleKey(p1, { rotate: true });
+              }
+            } else if (keyCode === " " && p1) {
+              e.preventDefault();
+              e.stopPropagation();
+              const keyId = "p1-space";
+              if (!keys[keyId]) {
+                keys[keyId] = true;
+                handleKey(p1, { hardDrop: true });
+              }
             }
           }
-          if (code === "Enter" || keyCode === "Enter") {
+
+          // P2 컨트롤 (방향키 + 엔터)
+          if (p2) {
+            if (keyCode === "ArrowLeft") {
+              e.preventDefault();
+              e.stopPropagation();
+              const keyId = "p2-ArrowLeft";
+              if (!keys[keyId]) {
+                keys[keyId] = true;
+                startKeyRepeat(keyId, p2, { left: true });
+              }
+            } else if (keyCode === "ArrowRight") {
+              e.preventDefault();
+              e.stopPropagation();
+              const keyId = "p2-ArrowRight";
+              if (!keys[keyId]) {
+                keys[keyId] = true;
+                startKeyRepeat(keyId, p2, { right: true });
+              }
+            } else if (keyCode === "ArrowDown") {
+              e.preventDefault();
+              e.stopPropagation();
+              const keyId = "p2-ArrowDown";
+              if (!keys[keyId]) {
+                keys[keyId] = true;
+                startKeyRepeat(keyId, p2, { down: true });
+              }
+            } else if (keyCode === "ArrowUp") {
+              e.preventDefault();
+              e.stopPropagation();
+              const keyId = "p2-ArrowUp";
+              if (!keys[keyId]) {
+                keys[keyId] = true;
+                handleKey(p2, { rotate: true });
+              }
+            } else if (code === "Enter" || keyCode === "Enter") {
+              e.preventDefault();
+              e.stopPropagation();
+              const keyId = "p2-enter";
+              if (!keys[keyId]) {
+                keys[keyId] = true;
+                handleKey(p2, { hardDrop: true });
+              }
+            }
+          }
+        } else {
+          // 1P 혼자: 방향키 + 스페이스
+          if (keyCode === "ArrowLeft" && p1) {
             e.preventDefault();
             e.stopPropagation();
-            const keyId = "p2-enter";
-            if (!keys[keyId]) {
-              keys[keyId] = true;
-              handleKey(p2, { hardDrop: true });
-            }
+            keys["ArrowLeft"] = true;
+            startKeyRepeat("ArrowLeft", p1, { left: true });
+          }
+          if (keyCode === "ArrowRight" && p1) {
+            e.preventDefault();
+            e.stopPropagation();
+            keys["ArrowRight"] = true;
+            startKeyRepeat("ArrowRight", p1, { right: true });
+          }
+          if (keyCode === "ArrowDown" && p1) {
+            e.preventDefault();
+            e.stopPropagation();
+            keys["ArrowDown"] = true;
+            startKeyRepeat("ArrowDown", p1, { down: true });
+          }
+          if (keyCode === "ArrowUp" && p1) {
+            e.preventDefault();
+            e.stopPropagation();
+            keys["ArrowUp"] = true;
+            handleKey(p1, { rotate: true });
+          }
+          if (keyCode === " " && p1) {
+            e.preventDefault();
+            e.stopPropagation();
+            keys[" "] = true;
+            handleKey(p1, { hardDrop: true });
           }
         }
       });
@@ -910,52 +987,81 @@
         const keyCode = e.key;
         const code = e.code;
 
-        if (keyCode === "ArrowLeft") {
-          keys["ArrowLeft"] = false;
-          stopKeyRepeat("ArrowLeft");
-        }
-        if (keyCode === "ArrowRight") {
-          keys["ArrowRight"] = false;
-          stopKeyRepeat("ArrowRight");
-        }
-        if (keyCode === "ArrowDown") {
-          keys["ArrowDown"] = false;
-          stopKeyRepeat("ArrowDown");
-        }
-        if (keyCode === "ArrowUp") {
-          keys["ArrowUp"] = false;
-        }
-        if (keyCode === " ") {
-          keys[" "] = false;
-        }
-        if (keyCode === "Enter" || code === "Enter") {
-          keys["Enter"] = false;
-        }
+        if (mode === "duo") {
+          // 2P 모드: 1P는 WASD + 스페이스, 2P는 방향키 + 엔터
 
-        // e.code를 사용하여 한영키 상태와 관계없이 키 감지
-        if (code === "KeyA" || key === "a") {
-          keys["p2-a"] = false;
-          stopKeyRepeat("p2-a");
-        } else if (code === "KeyD" || key === "d") {
-          keys["p2-d"] = false;
-          stopKeyRepeat("p2-d");
-        } else if (code === "KeyS" || key === "s") {
-          keys["p2-s"] = false;
-          stopKeyRepeat("p2-s");
-        } else if (code === "KeyW" || key === "w") {
-          keys["p2-w"] = false;
-        }
-        if (code === "Enter" || keyCode === "Enter") {
-          keys["p2-enter"] = false;
+          // P1 키 해제 (WASD + 스페이스)
+          if (code === "KeyA" || key === "a") {
+            keys["p1-a"] = false;
+            stopKeyRepeat("p1-a");
+          }
+          if (code === "KeyD" || key === "d") {
+            keys["p1-d"] = false;
+            stopKeyRepeat("p1-d");
+          }
+          if (code === "KeyS" || key === "s") {
+            keys["p1-s"] = false;
+            stopKeyRepeat("p1-s");
+          }
+          if (code === "KeyW" || key === "w") {
+            keys["p1-w"] = false;
+          }
+          if (keyCode === " ") {
+            keys["p1-space"] = false;
+          }
+
+          // P2 키 해제 (방향키 + 엔터)
+          if (keyCode === "ArrowLeft") {
+            keys["p2-ArrowLeft"] = false;
+            stopKeyRepeat("p2-ArrowLeft");
+          }
+          if (keyCode === "ArrowRight") {
+            keys["p2-ArrowRight"] = false;
+            stopKeyRepeat("p2-ArrowRight");
+          }
+          if (keyCode === "ArrowDown") {
+            keys["p2-ArrowDown"] = false;
+            stopKeyRepeat("p2-ArrowDown");
+          }
+          if (keyCode === "ArrowUp") {
+            keys["p2-ArrowUp"] = false;
+          }
+          if (code === "Enter" || keyCode === "Enter") {
+            keys["p2-enter"] = false;
+          }
+        } else {
+          // 1P 혼자: 방향키 + 스페이스
+          if (keyCode === "ArrowLeft") {
+            keys["ArrowLeft"] = false;
+            stopKeyRepeat("ArrowLeft");
+          }
+          if (keyCode === "ArrowRight") {
+            keys["ArrowRight"] = false;
+            stopKeyRepeat("ArrowRight");
+          }
+          if (keyCode === "ArrowDown") {
+            keys["ArrowDown"] = false;
+            stopKeyRepeat("ArrowDown");
+          }
+          if (keyCode === "ArrowUp") {
+            keys["ArrowUp"] = false;
+          }
+          if (keyCode === " ") {
+            keys[" "] = false;
+          }
         }
       });
 
       function start(m) {
         mode = m;
         gameRunning = true;
+        gamePaused = false;
+        p1GameOver = false;
+        p2GameOver = false;
         COLORS = THEMES[document.getElementById("theme").value];
         document.getElementById("menu").classList.add("hidden");
         document.getElementById("game").classList.remove("hidden");
+        document.getElementById("game-controls").classList.remove("hidden");
         document.getElementById("result").textContent = "";
 
         // 캔버스 크기 설정
@@ -986,7 +1092,38 @@
         // 모바일 컨트롤 초기화
         initMobileControls();
 
+        // 다시 시작 버튼 숨기기
+        document.getElementById("p1-resume-btn").classList.add("hidden");
+        document.getElementById("p2-resume-btn").classList.add("hidden");
+
+        // 조작법 안내 업데이트
+        if (mode === "duo") {
+          document.getElementById("p1-controls").innerHTML = `
+            <div>WASD 이동 | W 회전 | S 빠른 낙하</div>
+            <div>스페이스바: 한 번에 떨어뜨리기</div>
+          `;
+          document.getElementById("p2-controls").innerHTML = `
+            <div>← → 이동 | ↑ 회전 | ↓ 빠른 낙하</div>
+            <div>Enter: 한 번에 떨어뜨리기</div>
+          `;
+        } else {
+          document.getElementById("p1-controls").innerHTML = `
+            <div>← → 이동 | ↑ 회전 | ↓ 빠른 낙하</div>
+            <div>스페이스바: 한 번에 떨어뜨리기</div>
+          `;
+        }
+
         loop();
+      }
+
+      function pauseGame() {
+        if (!gameRunning) return;
+        gamePaused = !gamePaused;
+        if (gamePaused) {
+          document.getElementById("result").textContent = "⏸️ 일시정지";
+        } else {
+          document.getElementById("result").textContent = "";
+        }
       }
 
       /* ===================== 루프 ===================== */
@@ -1000,8 +1137,67 @@
           p.matrix = piece(rand());
           p.pos = { x: 3, y: 0 };
           if (collide(p)) {
-            gameRunning = false;
-            end(p === p1 ? 2 : 1);
+            // 게임 오버 처리 (게임은 계속 진행)
+            if (p === p1) {
+              p1GameOver = true;
+              beep(200, 0.3);
+              navigator.vibrate?.(100);
+              document
+                .getElementById("p1-resume-btn")
+                .classList.remove("hidden");
+              if (mode === "duo") {
+                if (!p2GameOver) {
+                  document.getElementById("result").textContent =
+                    "🎉 2P 승리! (1P는 다시 시작 가능)";
+                  stats.win++;
+                }
+              } else {
+                document.getElementById(
+                  "result"
+                ).textContent = `게임 오버! 점수: ${p1.score} | 라인: ${p1.lines}`;
+                stats.lose++;
+              }
+              saveStats();
+            } else if (p === p2) {
+              p2GameOver = true;
+              beep(200, 0.3);
+              navigator.vibrate?.(100);
+              document
+                .getElementById("p2-resume-btn")
+                .classList.remove("hidden");
+              if (mode === "duo") {
+                if (!p1GameOver) {
+                  document.getElementById("result").textContent =
+                    "🎉 1P 승리! (2P는 다시 시작 가능)";
+                  stats.win++;
+                }
+              }
+              saveStats();
+            }
+
+            // 모든 플레이어가 게임 오버되면 게임 종료
+            if (
+              (p1GameOver && (mode === "solo" || !p2)) ||
+              (mode === "duo" && p1GameOver && p2GameOver)
+            ) {
+              setTimeout(() => {
+                stopBGM();
+                Object.keys(keyTimers).forEach((key) => {
+                  stopKeyRepeat(key);
+                });
+                document.getElementById("menu").classList.remove("hidden");
+                document.getElementById("game").classList.add("hidden");
+                document
+                  .getElementById("game-controls")
+                  .classList.add("hidden");
+                const shareButtonsEl = document.getElementById("share-buttons");
+                if (shareButtonsEl) shareButtonsEl.classList.add("hidden");
+                const mobileControls =
+                  document.getElementById("mobile-controls");
+                if (mobileControls) mobileControls.classList.add("hidden");
+                gameRunning = false;
+              }, 3000);
+            }
             return;
           }
         }
@@ -1009,20 +1205,79 @@
 
       let last = 0;
       function loop(t = 0) {
-        if (!gameRunning) return;
+        if (!gameRunning || gamePaused) {
+          if (gamePaused) {
+            requestAnimationFrame(loop);
+          }
+          return;
+        }
 
         if (t - last > 700) {
-          drop(p1);
-          if (mode === "duo" && p2) drop(p2);
-          if (mode === "solo" && p2) {
+          if (!p1GameOver && p1) drop(p1);
+          if (mode === "duo" && p2 && !p2GameOver) drop(p2);
+          if (mode === "solo" && p2 && !p2GameOver) {
             drop(p2);
             aiMove(p2);
           }
           last = t;
         }
 
-        if (p1) draw(p1);
-        if ((mode === "duo" || mode === "solo") && p2) draw(p2);
+        if (p1 && !p1GameOver) draw(p1);
+        else if (p1 && p1GameOver) {
+          // 게임 오버된 플레이어는 회색으로 표시
+          const ctx = p1.ctx;
+          ctx.clearRect(0, 0, COLS, ROWS);
+          ctx.fillStyle = "#000";
+          ctx.fillRect(0, 0, COLS, ROWS);
+          ctx.fillStyle = "rgba(100, 100, 100, 0.5)";
+          ctx.fillRect(0, 0, COLS, ROWS);
+
+          // 게임 오버 텍스트
+          ctx.fillStyle = "#fff";
+          ctx.font = "bold 1.5px Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          const centerX = COLS / 2;
+          const centerY = ROWS / 2;
+
+          // 텍스트 배경
+          ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+          ctx.fillRect(centerX - 3, centerY - 1.5, 6, 3);
+
+          // 텍스트
+          ctx.fillStyle = "#ff0000";
+          ctx.fillText("GAME", centerX, centerY - 0.5);
+          ctx.fillText("OVER", centerX, centerY + 0.5);
+        }
+
+        if ((mode === "duo" || mode === "solo") && p2) {
+          if (!p2GameOver) draw(p2);
+          else {
+            const ctx = p2.ctx;
+            ctx.clearRect(0, 0, COLS, ROWS);
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0, 0, COLS, ROWS);
+            ctx.fillStyle = "rgba(100, 100, 100, 0.5)";
+            ctx.fillRect(0, 0, COLS, ROWS);
+
+            // 게임 오버 텍스트
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 1.5px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            const centerX = COLS / 2;
+            const centerY = ROWS / 2;
+
+            // 텍스트 배경
+            ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+            ctx.fillRect(centerX - 3, centerY - 1.5, 6, 3);
+
+            // 텍스트
+            ctx.fillStyle = "#ff0000";
+            ctx.fillText("GAME", centerX, centerY - 0.5);
+            ctx.fillText("OVER", centerX, centerY + 0.5);
+          }
+        }
         requestAnimationFrame(loop);
       }
 
@@ -1073,53 +1328,14 @@
           });
       }
 
-      function end(winner) {
-        lastWinner = winner;
-        beep(200, 0.3);
-        navigator.vibrate?.(100);
-        const resultEl = document.getElementById("result");
-        const shareButtonsEl = document.getElementById("share-buttons");
-
-        if (mode === "duo") {
-          resultEl.textContent = `🎉 ${winner}P 승리`;
-          stats[winner === 1 ? "win" : "lose"]++;
-        } else {
-          resultEl.textContent = `게임 오버! 점수: ${p1?.score || 0} | 라인: ${
-            p1?.lines || 0
-          }`;
-          stats.lose++;
-        }
-        saveStats();
-
-        // 공유하기 버튼 표시
-        shareButtonsEl.innerHTML = `
-          <button onclick="shareResult()" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg text-white font-bold text-lg shadow-lg transform transition-all hover:scale-105">
-            📤 결과 공유하기
-          </button>
-          <button onclick="copyLink()" class="px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 rounded-lg text-white font-bold text-lg shadow-lg transform transition-all hover:scale-105">
-            🔗 링크 복사
-          </button>
-        `;
-        shareButtonsEl.classList.remove("hidden");
-
-        setTimeout(() => {
-          stopBGM();
-          // 모든 키 타이머 정리
-          Object.keys(keyTimers).forEach((key) => {
-            stopKeyRepeat(key);
-          });
-          document.getElementById("menu").classList.remove("hidden");
-          document.getElementById("game").classList.add("hidden");
-          shareButtonsEl.classList.add("hidden");
-          const mobileControls = document.getElementById("mobile-controls");
-          if (mobileControls) mobileControls.classList.add("hidden");
-          gameRunning = false;
-        }, 5000);
-      }
-
       // 전역 함수로 노출
       window.shareResult = shareResult;
       window.copyLink = copyLink;
+      window.pauseGame = pauseGame;
+      window.resumePlayer = resumePlayer;
+      window.pauseGame = pauseGame;
+      window.saveGame = saveGame;
+      window.resumeGame = resumeGame;
     </script>
   </body>
 </html>
