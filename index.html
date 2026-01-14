@@ -2,7 +2,7 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <title>하루 한판 테트리스</title>
+    <title data-i18n-title="metaTitle">하루 한판 테트리스</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <meta
@@ -57,14 +57,56 @@
         text-align: center;
 }
   </style>
+  <style>
+    .lang-switch {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      display: inline-flex;
+      gap: 0;
+      padding: 3px;
+      border-radius: 999px;
+      background: rgba(24, 24, 27, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+    }
+    .lang-switch button {
+      border: none;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 7px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 44px;
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+    .lang-switch button.active {
+      background: #3b82f6;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    }
+    .lang-switch button:not(.active):hover {
+      background: rgba(59, 130, 246, 0.2);
+      color: rgba(255, 255, 255, 0.9);
+    }
+  </style>
 </head>
 
   <body
     class="bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white min-h-screen flex flex-col items-center py-8"
-  ><h1
+  >
+    <div class="lang-switch" role="tablist" aria-label="Language switcher">
+      <button type="button" data-lang="ko" class="active">KR</button>
+      <button type="button" data-lang="en">EN</button>
+    </div><h1
       class="mt-4 text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent drop-shadow-lg"
     >
-      🧱 하루 한판 테트리스
+      <span data-i18n="title">🧱 하루 한판 테트리스</span>
     </h1>
 
     <!-- 모드 선택 -->
@@ -74,13 +116,13 @@
           onclick="start('solo')"
           class="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-lg text-white font-bold text-lg shadow-lg transform transition-all hover:scale-105"
         >
-          🤖 싱글 (AI)
+          <span data-i18n="btnSolo">🤖 싱글 (AI)</span>
         </button>
         <button
           onclick="start('duo')"
           class="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-lg text-white font-bold text-lg shadow-lg transform transition-all hover:scale-105"
         >
-          👥 2인 플레이
+          <span data-i18n="btnDuo">👥 2인 플레이</span>
         </button>
       </div>
 
@@ -109,14 +151,15 @@
           class="bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-xl p-6 shadow-2xl border-2 border-zinc-700"
         >
           <div class="text-center mb-4">
-            <h2 class="text-2xl font-bold text-blue-400 mb-2">플레이어 1</h2>
+            <h2 class="text-2xl font-bold text-blue-400 mb-2" data-i18n="player1">플레이어 1</h2>
             <div id="p1-score" class="text-xl font-semibold text-yellow-400">
-              점수: 0
+              <span data-i18n="score">점수</span>: 0
             </div>
             <button
               id="p1-resume-btn"
               onclick="resumePlayer(1)"
               class="hidden mt-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg text-white font-bold text-sm shadow-lg transform transition-all hover:scale-105"
+              data-i18n="btnResume"
             >
               ▶️ 다시 시작
             </button>
@@ -130,8 +173,8 @@
           ></canvas>
         </div>
         <div id="p1-controls" class="mt-4 text-sm text-zinc-400 text-center">
-          <div>← → 이동 | ↑ 회전 | ↓ 빠른 낙하</div>
-          <div>스페이스바: 한 번에 떨어뜨리기</div>
+          <div data-i18n="controlsP1">← → 이동 | ↑ 회전 | ↓ 빠른 낙하</div>
+          <div data-i18n="controlsP1Space">스페이스바: 한 번에 떨어뜨리기</div>
         </div>
       </div>
 
@@ -141,14 +184,15 @@
           class="bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-xl p-6 shadow-2xl border-2 border-zinc-700"
         >
           <div class="text-center mb-4">
-            <h2 class="text-2xl font-bold text-green-400 mb-2">플레이어 2</h2>
+            <h2 class="text-2xl font-bold text-green-400 mb-2" data-i18n="player2">플레이어 2</h2>
             <div id="p2-score" class="text-xl font-semibold text-yellow-400">
-              점수: 0
+              <span data-i18n="score">점수</span>: 0
             </div>
             <button
               id="p2-resume-btn"
               onclick="resumePlayer(2)"
               class="hidden mt-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg text-white font-bold text-sm shadow-lg transform transition-all hover:scale-105"
+              data-i18n="btnResume"
             >
               ▶️ 다시 시작
             </button>
@@ -162,7 +206,7 @@
           ></canvas>
         </div>
         <div id="p2-controls" class="mt-4 text-sm text-zinc-400 text-center">
-          <div>WASD 이동 | W 회전 | Enter 빠른 낙하</div>
+          <div data-i18n="controlsP2">WASD 이동 | W 회전 | Enter 빠른 낙하</div>
         </div>
       </div>
     </div>
@@ -178,11 +222,12 @@
         onclick="pauseGame()"
         class="px-6 py-3 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 rounded-lg text-white font-bold shadow-lg transform transition-all hover:scale-105"
       >
-        ⏸️ 일시정지
+        <span data-i18n="btnPause">⏸️ 일시정지</span>
       </button>
       <button
         onclick="saveGame()"
         class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 rounded-lg text-white font-bold shadow-lg transform transition-all hover:scale-105"
+        data-i18n="btnSave"
       >
         💾 저장하기
       </button>
@@ -221,11 +266,12 @@
           id="btn-down"
           class="p-4 bg-zinc-700 rounded-lg text-xl font-bold active:bg-zinc-600 touch-manipulation"
         >
-          ↓ 빠른 낙하
+          <span data-i18n="btnDown">↓ 빠른 낙하</span>
         </button>
         <button
           id="btn-hard-drop"
           class="p-4 bg-zinc-700 rounded-lg text-xl font-bold active:bg-zinc-600 touch-manipulation"
+          data-i18n="btnHardDrop"
         >
           ⬇ 한 번에
         </button>
@@ -239,11 +285,179 @@
         target="_blank"
         class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-semibold transition-colors"
       >
-        🎁 다른 서비스 보기
+        <span data-i18n="btnOtherServices">🎁 다른 서비스 보기</span>
       </a>
     </div>
 
     <script>
+      // =========================
+      // i18n
+      // =========================
+      const translations = {
+        ko: {
+          metaTitle: "하루 한판 테트리스",
+          title: "🧱 하루 한판 테트리스",
+          btnSolo: "🤖 싱글 (AI)",
+          btnDuo: "👥 2인 플레이",
+          player1: "플레이어 1",
+          player2: "플레이어 2",
+          score: "점수",
+          lines: "라인",
+          btnResume: "▶️ 다시 시작",
+          controlsP1: "← → 이동 | ↑ 회전 | ↓ 빠른 낙하",
+          controlsP1Space: "스페이스바: 한 번에 떨어뜨리기",
+          controlsP2: "WASD 이동 | W 회전 | Enter 빠른 낙하",
+          btnPause: "⏸️ 일시정지",
+          btnSave: "💾 저장하기",
+          btnDown: "↓ 빠른 낙하",
+          btnHardDrop: "⬇ 한 번에",
+          btnOtherServices: "🎁 다른 서비스 보기",
+          statsPlay: "플레이 {play} | 승 {win} | 패 {lose}",
+          scoreDisplay: "점수: {score} | 라인: {lines}",
+          gameOver: "GAME OVER",
+          resultP1Win: "🎉 1P 승리! (2P는 다시 시작 가능)",
+          resultP2Win: "🎉 2P 승리! (1P는 다시 시작 가능)",
+          shareTitle: "🧱 하루 한판 테트리스",
+          shareResult: "{result}",
+          shareScore: "{winner}P 승리!",
+          shareScoreSolo: "점수: {score} | 라인: {lines}",
+          alertCopied: "결과가 클립보드에 복사되었습니다!",
+          alertLinkCopied: "링크가 클립보드에 복사되었습니다!",
+          promptCopy: "결과를 복사하세요:",
+          promptCopyLink: "링크를 복사하세요:",
+        },
+        en: {
+          metaTitle: "Daily Tetris",
+          title: "🧱 Daily Tetris",
+          btnSolo: "🤖 Solo (AI)",
+          btnDuo: "👥 2 Players",
+          player1: "Player 1",
+          player2: "Player 2",
+          score: "Score",
+          lines: "Lines",
+          btnResume: "▶️ Resume",
+          controlsP1: "← → Move | ↑ Rotate | ↓ Fast Drop",
+          controlsP1Space: "Spacebar: Hard Drop",
+          controlsP2: "WASD Move | W Rotate | Enter Fast Drop",
+          btnPause: "⏸️ Pause",
+          btnSave: "💾 Save",
+          btnDown: "↓ Fast Drop",
+          btnHardDrop: "⬇ Hard Drop",
+          btnOtherServices: "🎁 View Other Services",
+          statsPlay: "Play {play} | Win {win} | Lose {lose}",
+          scoreDisplay: "Score: {score} | Lines: {lines}",
+          gameOver: "GAME OVER",
+          resultP1Win: "🎉 Player 1 Wins! (Player 2 can resume)",
+          resultP2Win: "🎉 Player 2 Wins! (Player 1 can resume)",
+          shareTitle: "🧱 Daily Tetris",
+          shareResult: "{result}",
+          shareScore: "{winner}P Wins!",
+          shareScoreSolo: "Score: {score} | Lines: {lines}",
+          alertCopied: "Result copied to clipboard!",
+          alertLinkCopied: "Link copied to clipboard!",
+          promptCopy: "Copy result:",
+          promptCopyLink: "Copy link:",
+          gameOverSolo: "Game Over! Score: {score} | Lines: {lines}",
+        },
+      };
+
+      const defaultLang = "ko";
+      const supportedLangs = ["ko", "en"];
+      let currentLang = defaultLang;
+
+      function t(key, vars = {}) {
+        const langTable = translations[currentLang] || translations.ko;
+        let template = langTable?.[key] ?? translations.ko?.[key] ?? key;
+        if (typeof template !== "string") return template;
+        Object.keys(vars).forEach((k) => {
+          template = template.replace(new RegExp(`\\{${k}\\}`, "g"), vars[k]);
+        });
+        return template;
+      }
+
+      function applyTranslations() {
+        document.title = t("metaTitle");
+        document.documentElement.lang = currentLang;
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          el.textContent = t(el.dataset.i18n);
+        });
+        document.querySelectorAll("[data-i18n-html]").forEach((el) => {
+          el.innerHTML = t(el.dataset.i18nHtml);
+        });
+        document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+          if (el.tagName === "TITLE") {
+            el.textContent = t(el.dataset.i18nTitle);
+          } else {
+            el.title = t(el.dataset.i18nTitle);
+          }
+        });
+        document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+          el.setAttribute("aria-label", t(el.dataset.i18nAria));
+        });
+        document.querySelectorAll("[data-i18n-alt]").forEach((el) => {
+          el.setAttribute("alt", t(el.dataset.i18nAlt));
+        });
+      }
+
+      function detectLang() {
+        const params = new URLSearchParams(window.location.search);
+        const paramLang = params.get("lang");
+        if (supportedLangs.includes(paramLang)) return paramLang;
+        const stored = localStorage.getItem("preferredLang");
+        if (supportedLangs.includes(stored)) return stored;
+        const intlLocale =
+          typeof Intl === "object" && typeof Intl.DateTimeFormat === "function"
+            ? Intl.DateTimeFormat().resolvedOptions().locale
+            : "";
+        const sources = [
+          ...(navigator.languages || []),
+          navigator.language,
+          navigator.userLanguage,
+          intlLocale,
+        ]
+          .filter(Boolean)
+          .map((locale) => locale.toLowerCase());
+        const hasKorean = sources.some((locale) => locale.startsWith("ko"));
+        return hasKorean ? "ko" : "en";
+      }
+
+      function setLang(lang, options = {}) {
+        const nextLang = supportedLangs.includes(lang) ? lang : defaultLang;
+        currentLang = nextLang;
+        window.currentLang = currentLang;
+        document.documentElement.lang = nextLang;
+        localStorage.setItem("preferredLang", nextLang);
+        document.querySelectorAll(".lang-switch button").forEach((button) => {
+          button.classList.toggle("active", button.dataset.lang === nextLang);
+        });
+        applyTranslations();
+        if (options.updateUrl) {
+          const url = new URL(window.location.href);
+          url.searchParams.set("lang", nextLang);
+          window.history.replaceState({}, "", url);
+        }
+        // Update dynamic content
+        if (window.p1 && window.p1.score !== undefined) {
+          updateScoreDisplay();
+        }
+        if (window.stats) {
+          showStats();
+        }
+      }
+
+      document.querySelectorAll(".lang-switch button").forEach((button) => {
+        button.addEventListener("click", () => {
+          setLang(button.dataset.lang, { updateUrl: true });
+        });
+      });
+
+      setLang(detectLang(), { updateUrl: false });
+
+      // Make t() function and currentLang globally available
+      window.t = t;
+      window.currentLang = currentLang;
+      window.setLang = setLang;
+
       /* ===================== 설정 ===================== */
       const COLS = 10,
         ROWS = 18;
@@ -280,11 +494,12 @@
         localStorage.stats = JSON.stringify(stats);
       }
       function showStats() {
+        const t = window.t || ((key, vars = {}) => key);
         stats.play++;
         saveStats();
         document.getElementById(
           "stats"
-        ).textContent = `플레이 ${stats.play} | 승 ${stats.win} | 패 ${stats.lose}`;
+        ).textContent = t("statsPlay", { play: stats.play, win: stats.win, lose: stats.lose });
       }
 
       /* ===================== 사운드 ===================== */
@@ -653,12 +868,13 @@
         );
 
         // 점수 업데이트
+        const t = window.t || ((key, vars = {}) => key);
         const scoreEl =
           p === p1
             ? document.getElementById("p1-score")
             : document.getElementById("p2-score");
         if (scoreEl) {
-          scoreEl.textContent = `점수: ${p.score} | 라인: ${p.lines}`;
+          scoreEl.textContent = t("scoreDisplay", { score: p.score, lines: p.lines });
         }
       }
 
@@ -1155,10 +1371,11 @@
       }
 
       function pauseGame() {
+        const t = window.t || ((key, vars = {}) => key);
         if (!gameRunning) return;
         gamePaused = !gamePaused;
         if (gamePaused) {
-          document.getElementById("result").textContent = "⏸️ 일시정지";
+          document.getElementById("result").textContent = t("btnPause");
         } else {
           document.getElementById("result").textContent = "";
         }
@@ -1183,16 +1400,16 @@
               document
                 .getElementById("p1-resume-btn")
                 .classList.remove("hidden");
+              const t = window.t || ((key, vars = {}) => key);
               if (mode === "duo") {
                 if (!p2GameOver) {
-                  document.getElementById("result").textContent =
-                    "🎉 2P 승리! (1P는 다시 시작 가능)";
+                  document.getElementById("result").textContent = t("resultP2Win");
                   stats.win++;
                 }
               } else {
                 document.getElementById(
                   "result"
-                ).textContent = `게임 오버! 점수: ${p1.score} | 라인: ${p1.lines}`;
+                ).textContent = t("gameOverSolo", { score: p1.score, lines: p1.lines });
                 stats.lose++;
               }
               saveStats();
@@ -1203,10 +1420,10 @@
               document
                 .getElementById("p2-resume-btn")
                 .classList.remove("hidden");
+              const t = window.t || ((key, vars = {}) => key);
               if (mode === "duo") {
                 if (!p1GameOver) {
-                  document.getElementById("result").textContent =
-                    "🎉 1P 승리! (2P는 다시 시작 가능)";
+                  document.getElementById("result").textContent = t("resultP1Win");
                   stats.win++;
                 }
               }
@@ -1283,9 +1500,15 @@
           ctx.fillRect(centerX - 3, centerY - 1.5, 6, 3);
 
           // 텍스트
+          const t = window.t || ((key, vars = {}) => key);
+          const gameOverText = t("gameOver").split(" ");
           ctx.fillStyle = "#ff0000";
-          ctx.fillText("GAME", centerX, centerY - 0.5);
-          ctx.fillText("OVER", centerX, centerY + 0.5);
+          if (gameOverText.length === 2) {
+            ctx.fillText(gameOverText[0], centerX, centerY - 0.5);
+            ctx.fillText(gameOverText[1], centerX, centerY + 0.5);
+          } else {
+            ctx.fillText(t("gameOver"), centerX, centerY);
+          }
         }
 
         if ((mode === "duo" || mode === "solo") && p2) {
@@ -1311,9 +1534,15 @@
             ctx.fillRect(centerX - 3, centerY - 1.5, 6, 3);
 
             // 텍스트
+            const t = window.t || ((key, vars = {}) => key);
+            const gameOverText = t("gameOver").split(" ");
             ctx.fillStyle = "#ff0000";
-            ctx.fillText("GAME", centerX, centerY - 0.5);
-            ctx.fillText("OVER", centerX, centerY + 0.5);
+            if (gameOverText.length === 2) {
+              ctx.fillText(gameOverText[0], centerX, centerY - 0.5);
+              ctx.fillText(gameOverText[1], centerX, centerY + 0.5);
+            } else {
+              ctx.fillText(t("gameOver"), centerX, centerY);
+            }
           }
         }
         requestAnimationFrame(loop);
@@ -1322,17 +1551,18 @@
       let lastWinner = null;
 
       function shareResult() {
+        const t = window.t || ((key, vars = {}) => key);
         const resultText = document.getElementById("result").textContent;
         const scoreText =
           mode === "duo"
-            ? `${lastWinner}P 승리!`
-            : `점수: ${p1?.score || 0} | 라인: ${p1?.lines || 0}`;
-        const shareText = `🧱 하루 한판 테트리스\n${resultText}\n${scoreText}\n\nhttps://funnyfunny.cloud/`;
+            ? t("shareScore", { winner: lastWinner })
+            : t("shareScoreSolo", { score: p1?.score || 0, lines: p1?.lines || 0 });
+        const shareText = `${t("shareTitle")}\n${resultText}\n${scoreText}\n\nhttps://funnyfunny.cloud/`;
 
         if (navigator.share) {
           navigator
             .share({
-              title: "하루 한판 테트리스",
+              title: t("shareTitle"),
               text: shareText,
               url: window.location.href,
             })
@@ -1344,25 +1574,26 @@
           navigator.clipboard
             .writeText(shareText)
             .then(() => {
-              alert("결과가 클립보드에 복사되었습니다!");
+              alert(t("alertCopied"));
             })
             .catch(() => {
               // 복사 실패 시 텍스트 표시
-              prompt("결과를 복사하세요:", shareText);
+              prompt(t("promptCopy"), shareText);
             });
         }
       }
 
       function copyLink() {
+        const t = window.t || ((key, vars = {}) => key);
         const url = window.location.href;
         navigator.clipboard
           .writeText(url)
           .then(() => {
-            alert("링크가 클립보드에 복사되었습니다!");
+            alert(t("alertLinkCopied"));
           })
           .catch(() => {
             // 복사 실패 시 텍스트 표시
-            prompt("링크를 복사하세요:", url);
+            prompt(t("promptCopyLink"), url);
           });
       }
 
