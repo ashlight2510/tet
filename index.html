@@ -215,6 +215,16 @@
       id="result"
       class="mt-6 text-3xl font-bold text-center min-h-[50px]"
     ></div>
+    <div id="gameoverAd" class="hidden w-full max-w-2xl mx-auto mt-4">
+      <ins
+        class="adsbygoogle"
+        style="display:block; width:100%;"
+        data-ad-client="ca-pub-1204894220949193"
+        data-ad-slot="5145068706"
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      ></ins>
+    </div>
 
     <!-- 게임 컨트롤 버튼 -->
     <div id="game-controls" class="hidden mt-4 flex gap-4 justify-center">
@@ -886,12 +896,45 @@
       }
 
       /* ===================== 시작 ===================== */
+      const RESTART_DELAY_MS = 2000;
       let p1,
         p2,
         mode,
         gameRunning = false;
       const keys = {};
       const keyTimers = {};
+
+      function lockResumeButton(id) {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        const unlockAt = Date.now() + RESTART_DELAY_MS;
+        btn.dataset.unlockAt = String(unlockAt);
+        btn.disabled = true;
+        btn.classList.add("opacity-60", "pointer-events-none");
+        setTimeout(() => {
+          if (Number(btn.dataset.unlockAt) !== unlockAt) return;
+          btn.disabled = false;
+          btn.classList.remove("opacity-60", "pointer-events-none");
+        }, RESTART_DELAY_MS);
+      }
+
+      function showGameOverAd() {
+        const ad = document.getElementById("gameoverAd");
+        if (!ad) return;
+        ad.classList.remove("hidden");
+        if (ad.dataset.loaded) return;
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+          ad.dataset.loaded = "true";
+        } catch {
+          // ignore ad loading errors
+        }
+      }
+
+      function hideGameOverAd() {
+        const ad = document.getElementById("gameoverAd");
+        if (ad) ad.classList.add("hidden");
+      }
 
       function handleKey(player, actions) {
         if (!player) return;
@@ -1311,6 +1354,7 @@
         document.getElementById("game").classList.remove("hidden");
         document.getElementById("game-controls").classList.remove("hidden");
         document.getElementById("result").textContent = "";
+        hideGameOverAd();
 
         // 캔버스 크기 설정
         const p1Canvas = document.getElementById("p1");
@@ -1394,6 +1438,8 @@
               document
                 .getElementById("p1-resume-btn")
                 .classList.remove("hidden");
+              lockResumeButton("p1-resume-btn");
+              showGameOverAd();
               const t = window.t || ((key, vars = {}) => key);
               if (mode === "duo") {
                 if (!p2GameOver) {
@@ -1414,6 +1460,8 @@
               document
                 .getElementById("p2-resume-btn")
                 .classList.remove("hidden");
+              lockResumeButton("p2-resume-btn");
+              showGameOverAd();
               const t = window.t || ((key, vars = {}) => key);
               if (mode === "duo") {
                 if (!p1GameOver) {
